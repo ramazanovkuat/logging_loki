@@ -14,7 +14,7 @@ ingester:
     enabled: false
 
 limits_config:
-  retention_period: 7d    # хранить 7 суток
+  retention_period: 7d
 
 schema_config:
   configs:
