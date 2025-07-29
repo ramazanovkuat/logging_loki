@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  # ── Python‑приложение ────────────────────────────────────────────
+  toy-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: toy-api
+    ports:
+      - "8005:8005"           # ← наружу 8005, внутри 8005
+    environment:
+      - LOG_LEVEL=INFO
+    depends_on:
+      - loki
+
+  # ── Loki ─────────────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:3.4.1
+    container_name: loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - loki_data:/loki
+
+  # ── Fluent Bit ───────────────────────────────────────────────────
+  fluent-bit:
+    image: cr.fluentbit.io/fluent/fluent-bit:4.0
+    container_name: fluent-bit
+    depends_on:
+      - loki
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./observability/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+    command: ["-c", "/fluent-bit/etc/fluent-bit.conf"]
+    ports:
+      - "2020:2020"   # метрики агента
+
+  # ── Grafana ──────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3005:3000"           # ← наружу 3005, внутри 3000 (стандартный порт Grafana)
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - loki
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  loki_data:
+  grafana_data:
