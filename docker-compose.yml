@@ -39,19 +39,19 @@ services:
     ports:
       - "2020:2020"   # метрики агента
 
-  # # ── Grafana ──────────────────────────────────────────────────────
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   container_name: grafana
-  #   ports:
-  #     - "3005:3000"           # ← наружу 3005, внутри 3000 (стандартный порт Grafana)
-  #   environment:
-  #     - GF_SECURITY_ADMIN_PASSWORD=admin
-  #   depends_on:
-  #     - loki
-  #   volumes:
-  #     - grafana_data:/var/lib/grafana
+  # ── Grafana ──────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3005:3000"           # ← наружу 3005, внутри 3000 (стандартный порт Grafana)
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - loki
+    volumes:
+      - grafana_data:/var/lib/grafana
 
 volumes:
   loki_data:
-  # grafana_data:
+  grafana_data:
